@@ -2,6 +2,7 @@ resource "aws_db_subnet_group" "db_subnet_group" {
   name="db-subnet-group"
   subnet_ids=aws_subnet.private[*].id
 }
+
 resource "aws_db_instance" "postgres" {
   allocated_storage=var.db_allocated_storage
   engine="postgres"

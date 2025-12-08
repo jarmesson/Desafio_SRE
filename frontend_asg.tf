@@ -90,7 +90,6 @@ resource "aws_autoscaling_group" "frontend_asg" {
   depends_on = [aws_lb_listener.http]
 }
 
-
 resource "aws_autoscaling_policy" "frontend_scale_out" {
   name                   = "frontend-scale-out"
   autoscaling_group_name = aws_autoscaling_group.frontend_asg.name
@@ -122,7 +121,6 @@ resource "aws_cloudwatch_metric_alarm" "frontend_high_requests" {
     LoadBalancer = aws_lb.alb.arn_suffix
   }
 }
-
 
 resource "aws_autoscaling_policy" "frontend_scale_in" {
   name                   = "frontend-scale-in"

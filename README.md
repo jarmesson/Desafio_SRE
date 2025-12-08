@@ -2,16 +2,20 @@
 
 Este projeto provisiona uma infraestrutura completa na AWS. No desafio foram implementadas as seguintes configurações:
 
+- EC2
 - VPC com subnets públicas e privadas  
 - NAT Gateway, Internet Gateway e tabelas de rota  
-- ALB (Application Load Balancer)  
-- Auto Scaling Group com EC2 rodando Nginx  
+- ALB (Application Load Balancer) público para o frontend  
+- ALB interno para o backend  
+- Auto Scaling Group com EC2 rodando Nginx (Frontend)
+- Auto Scaling Group com EC2 rodando Python HTTP Server na porta 8080 (Backend)
 - RDS PostgreSQL Multi-AZ  
-- Security Groups 
+- Security Groups controlando comunicação entre camadas  
 
 ---
 
-## 📄 O que cada arquivo `.tf` faz
+
+## Função de cada arquivo `.tf`
 
 ### **vpc.tf**
 Responsável pela rede:
@@ -23,29 +27,46 @@ Responsável pela rede:
 
 ---
 
-### **alb.tf**
-Responsável pela camada de aplicação:
-- Launch Template (instância EC2 com Nginx com *user_data*)  
-- Auto Scaling Group  
-- Application Load Balancer  
-- Target Group + Listener  
-- Auto Scaling baseadas na quantidade de requisições 
-- Alarme CloudWatch  
+### **frontend_asg.tf**
+Responsável pela camada de aplicação (Frontend):
+- Launch Template (EC2 com Nginx instalado via *user_data*)  
+- Auto Scaling Group do frontend (subnets públicas)  
+- Application Load Balancer público  
+- Target Group e Listener na porta 80  
+- Auto Scaling baseado em RequestCount  
+- Alarmes CloudWatch para Auto Scaling  
+- Página HTML gerada via script de inicialização  
+
+---
+
+### **backend_asg.tf**
+Responsável pela camada backend:
+- Launch Template rodando servidor Python com python3 -m http.server 8080  
+- ALB interno para comunicação interna  
+- Target Group na porta 8080 com health check configurado  
+- Listener direcionando tráfego para o backend  
+- Auto Scaling Group em subnets privadas  
+- Políticas de Auto Scaling configuradas com alarmes de alta e baixa requisição  
+- Backend só recebe tráfego do ALB interno para isolamento de rede  
 
 ---
 
 ### **rds.tf**
 Responsável pelo banco de dados:
-- Subnet Group do RDS (subnets privadas)  
+- Subnet Group do RDS   
 - Instância RDS PostgreSQL Multi-AZ  
- 
+- Acesso permitido apenas ao Security Group do backend  
+- Banco não é acessível publicamente  
+
 ---
 
 ### **security_groups.tf**
 Responsável pela segurança:
-- SG do ALB (entrada HTTP pública)  
-- SG da aplicação (recebe apenas do ALB)  
-- SG do RDS (aceita somente da aplicação)  
+- SG do ALB público   
+- SG do frontend: recebe tráfego do ALB público  
+- SG do ALB interno: recebe somente tráfego vindo do frontend  
+- SG do backend: recebe somente tráfego do ALB interno (porta 8080)  
+- SG do RDS: permite tráfego apenas do backend (porta 5432)  
 
 ---
 
@@ -53,16 +74,33 @@ Responsável pela segurança:
 Centraliza variáveis:
 - Region  
 - CIDRs  
-- Lista de subnets  
-- Tipos de instância    
+- Subnets públicas e privadas  
+- Tipos de instância  
+- Parâmetros de Auto Scaling  
+- Credenciais do RDS  
 
 ---
 
 ### **outputs.tf**
 Exibe informações após o deploy:
-- DNS do ALB  
+- DNS do ALB público  
+- DNS do ALB interno (backend)  
 - Endpoint do RDS  
-- Nome do Auto Scaling Group  
+
+---
+
+### **provider.tf**
+Responsável por:
+- Configurar o provedor AWS  
+- Definir a região  
+- Utilização do provider hashicorp/aws  
+
+---
+
+### **versions.tf**
+Responsável por:
+- Travar as versões mínimas do Terraform e do provider AWS  
+- Garantir compatibilidade e reprodutibilidade  
 
 ---
 
