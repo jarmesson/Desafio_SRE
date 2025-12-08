@@ -104,6 +104,14 @@ Responsável por:
 
 ---
 
+## Fluxograma
+
+Usuário → ALB (frontend) → Frontend
+Frontend → ALB (backend) → Backend 
+Backend → RDS
+
+---
+
 ## Como executar
 
 1. Inicializar:
