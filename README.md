@@ -57,6 +57,7 @@ Responsável pelo banco de dados:
 - Instância RDS PostgreSQL Multi-AZ  
 - Acesso permitido apenas ao Security Group do backend  
 - Banco não é acessível publicamente  
+- Senha do banco salva no AWS Secrets Manager para maior segurança
 
 ---
 
