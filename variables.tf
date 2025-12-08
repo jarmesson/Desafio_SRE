@@ -58,11 +58,6 @@ variable "db_username" {
   default = "admin"
 }
 
-variable "db_password" {
-  description = "Senha do PostgreSQL"
-  type        = string
-  sensitive   = true
-}
 
 variable "db_instance_class" {
   default = "db.t3.micro"
